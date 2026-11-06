@@ -26,9 +26,13 @@ jobs:
 
       - name: Patch Pods fmt consteval for Xcode 16.3+ / 26+
         run: |
-          if [ -f "ios/Pods/fmt/include/fmt/core.h" ]; then
-            chmod +w ios/Pods/fmt/include/fmt/core.h
-            sed -i '' 's/#define FMT_USE_CONSTEVAL 1/#define FMT_USE_CONSTEVAL 0/g' ios/Pods/fmt/include/fmt/core.h
+          chmod -R +w ios/Pods/fmt/include/fmt
+          sed -i '' 's/FMT_USE_CONSTEVAL 1/FMT_USE_CONSTEVAL 0/g' ios/Pods/fmt/include/fmt/*.h
+          if [ -d "ios/Pods/Target Support Files/fmt" ]; then
+            chmod -R +w "ios/Pods/Target Support Files/fmt"
+            for cfg in "ios/Pods/Target Support Files/fmt/"*.xcconfig; do
+              echo "CLANG_CXX_LANGUAGE_STANDARD = c++17" >> "$cfg"
+            done
           fi
 
       - name: Build Release .app without Apple Code Signing
