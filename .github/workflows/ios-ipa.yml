@@ -24,6 +24,13 @@ jobs:
       - name: Generate native iOS project (Expo Prebuild)
         run: npx expo prebuild --platform ios --clean
 
+      - name: Patch Pods fmt consteval for Xcode 16.3+ / 26+
+        run: |
+          if [ -f "ios/Pods/fmt/include/fmt/core.h" ]; then
+            chmod +w ios/Pods/fmt/include/fmt/core.h
+            sed -i '' 's/#define FMT_USE_CONSTEVAL 1/#define FMT_USE_CONSTEVAL 0/g' ios/Pods/fmt/include/fmt/core.h
+          fi
+
       - name: Build Release .app without Apple Code Signing
         working-directory: ios
         run: |
@@ -38,7 +45,8 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
-            AD_HOC_CODE_SIGNING_ALLOWED=YES
+            AD_HOC_CODE_SIGNING_ALLOWED=YES \
+            COMPILER_INDEX_STORE_ENABLE=NO
 
       - name: Package .app into Unsigned .ipa for Sideloadly
         run: |
